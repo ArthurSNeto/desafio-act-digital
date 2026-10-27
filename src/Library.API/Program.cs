@@ -1,4 +1,6 @@
 using Library.API.Configurations;
+using Library.Infra.EF.Context;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.Diagnostics;
 
@@ -6,7 +8,7 @@ namespace Library.API;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
@@ -17,6 +19,8 @@ public class Program
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
             builder.Host.ConfigureSerilog();
+
+            builder.Services.AddDependencies();
 
             builder.Services.ConfigureOpenApi();
 
@@ -50,7 +54,16 @@ public class Program
 
             app.MapControllers();
 
-            app.Run();
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                if (dbContext.Database.IsRelational())
+                {
+                    await dbContext.Database.MigrateAsync();
+                }
+            }
+
+            await app.RunAsync();
         }
         catch (Exception ex)
         {

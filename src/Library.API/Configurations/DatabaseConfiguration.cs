@@ -9,7 +9,7 @@ public static class DatabaseConfiguration
     {
         var connectionString = configuration.GetConnectionString("PostgreSql");
 
-        services.AddDbContext<ApplicationDbContext>(options =>
+        services.AddDbContext<IApplicationDbContext, ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString, npgsqlOptions =>
             {
                 npgsqlOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
