@@ -13,4 +13,9 @@ public class UserRepository : GenericRepositoryBase<User>, IUserRepository
     {
         return GenericRepository.CreateAsync(entity, cancellationToken);
     }
+
+    public Task<User?> RetrieveByIDAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return GenericRepository.RetrieveByIDAsync(id, cancellationToken);
+    }
 }

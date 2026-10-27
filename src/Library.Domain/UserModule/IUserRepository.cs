@@ -3,5 +3,6 @@
 namespace Library.Domain.UserModule;
 
 public interface IUserRepository :
-    ICreateRepository<User>
+    ICreateRepository<User>,
+    IRetrieveByIDRepository<User>
 { }
