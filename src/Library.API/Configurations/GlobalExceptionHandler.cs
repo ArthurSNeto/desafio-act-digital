@@ -5,7 +5,7 @@ using Microsoft.Extensions.Primitives;
 using System.Data.Entity.Infrastructure;
 using System.Diagnostics;
 
-namespace Library.API.Handlers;
+namespace Library.API.Configurations;
 
 public sealed class GlobalExceptionHandler(
     IProblemDetailsService problemDetailsService,

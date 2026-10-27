@@ -1,25 +1,41 @@
 {
+  "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "scalar/v1",
+      "applicationUrl": "https://localhost:7145;http://localhost:5145",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings__PostgreSql": "Host=localhost;Port=5432;Database=library_db;Username=postgres;Password=postgres",
+        "ConnectionStrings__Redis": "localhost:6379"
+      }
+    },
     "http": {
       "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "todos",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5041"
-    },
-    "Container (Dockerfile)": {
-      "commandName": "Docker",
       "launchBrowser": true,
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/todos",
+      "launchUrl": "scalar/v1",
+      "applicationUrl": "http://localhost:5145",
       "environmentVariables": {
-        "ASPNETCORE_HTTP_PORTS": "8080"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings__PostgreSql": "Host=localhost;Port=5432;Database=library_db;Username=postgres;Password=postgres",
+        "ConnectionStrings__Redis": "localhost:6379"
+      }
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": false,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/health/ready",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings__PostgreSql": "Host=host.docker.internal;Port=5432;Database=library_db;Username=postgres;Password=postgres",
+        "ConnectionStrings__Redis": "host.docker.internal:6379"
       },
       "publishAllPorts": true,
       "useSSL": false
     }
-  },
-  "$schema": "https://json.schemastore.org/launchsettings.json"
+  }
 }
