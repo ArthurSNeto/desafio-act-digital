@@ -43,7 +43,7 @@ public sealed class CreateBookCommandHandler(IBookRepository bookRepository, IUn
 {
     public async Task<Result<BookResponse>> Handle(CreateBookCommand request, CancellationToken cancellationToken)
     {
-        if (await bookRepository.ExistsByIsbnAsync(request.Isbn, cancellationToken))
+        if (await bookRepository.ExistsByIsbnAsync(Guid.Empty, request.Isbn, cancellationToken))
         {
             throw new BusinessRuleException($"Já existe um livro cadastrado com o ISBN '{request.Isbn}'.");
         }

@@ -31,12 +31,8 @@ public sealed class Book : Entity
         CreatedAtUtc = DateTime.UtcNow;
     }
 
-    public void UpdateDetails(string title, string author, int totalCopies)
+    public void UpdateDetails(string? title, string? author, string? isbn, int totalCopies)
     {
-        if (string.IsNullOrWhiteSpace(title))
-            throw new BusinessRuleException("O título do livro não pode ser vazio.");
-        if (string.IsNullOrWhiteSpace(author))
-            throw new BusinessRuleException("O autor do livro não pode ser vazio.");
         if (totalCopies < 0)
             throw new BusinessRuleException("A quantidade total de exemplares não pode ser negativa.");
 
@@ -47,8 +43,9 @@ public sealed class Book : Entity
                 $"Não é possível reduzir o total para {totalCopies}, pois existem {borrowedCopies} exemplares emprestados no momento.");
         }
 
-        Title = title;
-        Author = author;
+        Title = title ?? Title;
+        Author = author ?? Author;
+        Isbn = isbn is not null ? NormalizeIsbn(isbn) : Isbn;
 
         AvailableCopies = totalCopies - borrowedCopies;
         TotalCopies = totalCopies;

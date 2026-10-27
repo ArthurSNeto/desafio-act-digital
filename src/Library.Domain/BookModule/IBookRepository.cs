@@ -9,7 +9,7 @@ public interface IBookRepository :
     IDeleteRepository<Book>
 {
     Task<Book?> GetByIsbnAsync(string isbn, CancellationToken cancellationToken = default);
-    Task<bool> ExistsByIsbnAsync(string isbn, CancellationToken cancellationToken = default);
+    Task<bool> ExistsByIsbnAsync(Guid id, string isbn, CancellationToken cancellationToken = default);
     Task<List<Book>> ListAsync(bool onlyActive = true, CancellationToken cancellationToken = default);
     Task<bool> HasLoanHistoryAsync(Guid bookId, CancellationToken cancellationToken = default);
 }

@@ -38,4 +38,12 @@ public sealed class BooksController : BaseController
         var result = await Mediator.Send(new GetBookByIdQuery(id), ct);
         return HandleResult(result);
     }
+
+    [HttpPatch]
+    [ProducesResponseType(typeof(BookResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Update([FromBody] UpdateBookCommand command, CancellationToken ct)
+    {
+        var result = await Mediator.Send(command, ct);
+        return HandleResult(result);
+    }
 }

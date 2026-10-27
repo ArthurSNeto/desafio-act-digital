@@ -30,9 +30,9 @@ public class BookRepository : GenericRepositoryBase<Book>, IBookRepository
         GenericRepository.Delete(entity);
     }
 
-    public Task<bool> ExistsByIsbnAsync(string isbn, CancellationToken cancellationToken = default)
+    public Task<bool> ExistsByIsbnAsync(Guid id, string isbn, CancellationToken cancellationToken = default)
     {
-        return GenericRepository.Context.Set<Book>().AnyAsync(b => b.Isbn == isbn, cancellationToken);
+        return GenericRepository.Context.Set<Book>().AnyAsync(b => b.Isbn == isbn && b.Id != id, cancellationToken);
     }
 
     public Task<Book?> GetByIsbnAsync(string isbn, CancellationToken cancellationToken = default)
