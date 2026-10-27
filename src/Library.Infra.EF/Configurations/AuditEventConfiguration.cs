@@ -1,4 +1,4 @@
-﻿using Library.Domain.Audit;
+﻿using Library.Domain.AuditModule;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

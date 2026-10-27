@@ -1,7 +1,7 @@
-﻿using Library.Domain.Audit;
+﻿using Library.Domain.AuditModule;
 using Library.Infra.EF.Context;
 
-namespace Library.Infra.EF.Repositories.Audit;
+namespace Library.Infra.EF.Repositories.AuditModule;
 
 public class AuditEventRepository : GenericRepositoryBase<AuditEvent>, IAuditEventRepository
 {

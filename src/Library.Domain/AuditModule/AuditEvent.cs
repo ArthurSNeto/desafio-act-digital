@@ -1,4 +1,4 @@
-﻿namespace Library.Domain.Audit;
+﻿namespace Library.Domain.AuditModule;
 
 public sealed class AuditEvent : Entity
 {

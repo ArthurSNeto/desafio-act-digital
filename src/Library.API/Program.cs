@@ -1,4 +1,7 @@
+using FluentValidation;
 using Library.API.Configurations;
+using Library.Application.Behaviors;
+using Library.Application.BookModule.Commands;
 using Library.Infra.EF.Context;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -21,6 +24,14 @@ public class Program
             builder.Host.ConfigureSerilog();
 
             builder.Services.AddDependencies();
+
+            builder.Services.AddValidatorsFromAssemblyContaining<CreateBookCommandValidator>();
+
+            builder.Services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssembly(typeof(CreateBookCommand).Assembly);
+                cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            });
 
             builder.Services.ConfigureOpenApi();
 

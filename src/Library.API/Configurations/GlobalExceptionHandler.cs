@@ -1,8 +1,8 @@
 ﻿using Library.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
-using System.Data.Entity.Infrastructure;
 using System.Diagnostics;
 
 namespace Library.API.Configurations;
@@ -29,9 +29,9 @@ public sealed class GlobalExceptionHandler(
 
         httpContext.Response.StatusCode = statusCode;
 
-        var traceId = Activity.Current?.Id ?? httpContext.TraceIdentifier;
+        string traceId = Activity.Current?.Id ?? httpContext.TraceIdentifier;
 
-        var problemDetails = new ProblemDetails
+        ProblemDetails problemDetails = new()
         {
             Status = statusCode,
             Title = title,
@@ -48,7 +48,18 @@ public sealed class GlobalExceptionHandler(
             problemDetails.Extensions["correlationId"] = correlationId.ToString();
         }
 
-        if (exception is ValidationException validationException)
+        if (exception is FluentValidation.ValidationException fluentValidationException)
+        {
+            Dictionary<string, string[]> validationErrors = fluentValidationException.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.Select(e => e.ErrorMessage).ToArray()
+                );
+
+            problemDetails.Extensions["errors"] = validationErrors;
+        }
+        else if (exception is ValidationException validationException)
         {
             problemDetails.Extensions["errors"] = validationException.Errors;
         }
@@ -65,35 +76,36 @@ public sealed class GlobalExceptionHandler(
     {
         return exception switch
         {
-            EntityNotFoundException ex => (
-                StatusCodes.Status404NotFound,
-                "Recurso Não Encontrado",
-                ex.Message,
-                "https://tools.ietf.org/html/rfc9110#section-15.5.5"
+            FluentValidation.ValidationException => (
+                StatusCodes.Status400BadRequest,
+                "Falha de Validação",
+                "Um ou mais erros de validação ocorreram nos campos enviados.",
+                "https://tools.ietf.org/html/rfc9110#section-15.5.1"
             ),
-
-            // Atende conflitos de estoque ou DbUpdateConcurrencyException do EF Core
-            ConcurrencyConflictException or DbUpdateConcurrencyException => (
-                StatusCodes.Status409Conflict,
-                "Conflito de Concorrência",
-                exception.Message,
-                "https://tools.ietf.org/html/rfc9110#section-15.5.10"
-            ),
-
-            BusinessRuleException ex => (
-                StatusCodes.Status422UnprocessableEntity,
-                "Regra de Negócio Violada",
-                ex.Message,
-                "https://tools.ietf.org/html/rfc9110#section-15.5.21"
-            ),
-
             ValidationException ex => (
                 StatusCodes.Status400BadRequest,
                 "Falha de Validação",
                 ex.Message,
                 "https://tools.ietf.org/html/rfc9110#section-15.5.1"
             ),
-
+            EntityNotFoundException ex => (
+                StatusCodes.Status404NotFound,
+                "Recurso Não Encontrado",
+                ex.Message,
+                "https://tools.ietf.org/html/rfc9110#section-15.5.5"
+            ),
+            ConcurrencyConflictException or DbUpdateConcurrencyException => (
+                StatusCodes.Status409Conflict,
+                "Conflito de Concorrência",
+                exception.Message,
+                "https://tools.ietf.org/html/rfc9110#section-15.5.10"
+            ),
+            BusinessRuleException ex => (
+                StatusCodes.Status422UnprocessableEntity,
+                "Regra de Negócio Violada",
+                ex.Message,
+                "https://tools.ietf.org/html/rfc9110#section-15.5.21"
+            ),
             _ => (
                 StatusCodes.Status500InternalServerError,
                 "Erro Interno no Servidor",

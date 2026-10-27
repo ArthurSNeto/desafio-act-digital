@@ -1,6 +1,6 @@
 ﻿using Library.Domain.Repository;
 
-namespace Library.Domain.Audit;
+namespace Library.Domain.AuditModule;
 
 public interface IAuditEventRepository : ICreateRepository<AuditEvent>
 { }
