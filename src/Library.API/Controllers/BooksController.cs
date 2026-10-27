@@ -1,5 +1,6 @@
 ﻿using Library.Application.BookModule.Commands;
 using Library.Application.BookModule.Models;
+using Library.Application.BookModule.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +20,22 @@ public sealed class BooksController : BaseController
     {
         var result = await Mediator.Send(command, ct);
 
+        return HandleResult(result);
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(IReadOnlyList<BookResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> List([FromQuery] bool onlyActive = true, CancellationToken ct = default)
+    {
+        var result = await Mediator.Send(new ListBooksQuery(onlyActive), ct);
+        return HandleResult(result);
+    }
+
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(BookResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetById([FromRoute] Guid id, CancellationToken ct)
+    {
+        var result = await Mediator.Send(new GetBookByIdQuery(id), ct);
         return HandleResult(result);
     }
 }
