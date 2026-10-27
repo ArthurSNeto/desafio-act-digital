@@ -10,3 +10,6 @@ public record BookResponse(
     bool IsActive,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc);
+
+public record BookAvailableResponse(
+    bool Available);

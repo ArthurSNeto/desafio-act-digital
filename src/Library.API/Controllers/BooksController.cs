@@ -54,4 +54,12 @@ public sealed class BooksController : BaseController
         var result = await Mediator.Send(new DeleteBookCommand(id), ct);
         return HandleResult(result);
     }
+
+    [HttpGet("{id:guid}/availability")]
+    [ProducesResponseType(typeof(BookResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> CheckBookAvailability([FromRoute] Guid id, CancellationToken ct)
+    {
+        var result = await Mediator.Send(new BookAvailableQueryQuery(id), ct);
+        return HandleResult(result);
+    }
 }
