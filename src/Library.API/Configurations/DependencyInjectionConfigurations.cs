@@ -1,8 +1,10 @@
 ﻿using Library.Domain.AuditModule;
 using Library.Domain.BookModule;
 using Library.Domain.UnitOfWork;
+using Library.Domain.UserModule;
 using Library.Infra.EF.Repositories.AuditModule;
 using Library.Infra.EF.Repositories.BookModule;
+using Library.Infra.EF.Repositories.UserModule;
 using Library.Infra.EF.UnitOfWork;
 
 namespace Library.API.Configurations;
@@ -14,6 +16,7 @@ public static class DependencyInjectionConfigurations
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IAuditEventRepository, AuditEventRepository>();
         services.AddScoped<IBookRepository, BookRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
     }

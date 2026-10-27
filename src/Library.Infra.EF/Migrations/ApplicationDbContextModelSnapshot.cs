@@ -120,6 +120,17 @@ namespace Library.Infra.EF.Migrations
 
                     b.ToTable("Books", (string)null);
                 });
+
+            modelBuilder.Entity("Library.Domain.UserModule.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users", (string)null);
+                });
 #pragma warning restore 612, 618
         }
     }
