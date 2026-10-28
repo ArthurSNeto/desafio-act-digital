@@ -41,11 +41,11 @@ public sealed class ReturnLoanCommandHandler(
         Book? book = await bookRepository.RetrieveByIDAsync(loan.BookId, cancellationToken) 
             ?? throw new EntityNotFoundException("Livro", loan.BookId);
 
-        book.IncreaseAvailableCopies();
-        bookRepository.Update(book);
-
         loan.Return();
         loanRepository.Update(loan);
+
+        book.IncreaseAvailableCopies();
+        bookRepository.Update(book);
 
         await unitOfWork.CommitAsync(cancellationToken);
 
