@@ -1,9 +1,15 @@
 using FluentValidation;
 using Library.API.Configurations;
+using Library.API.Middlewares;
 using Library.Application.Behaviors;
 using Library.Application.BookModule.Commands;
+using Library.Application.Telemetry;
 using Library.Infra.EF.Context;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 using System.Diagnostics;
 
@@ -22,6 +28,10 @@ public class Program
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
             builder.Host.ConfigureSerilog();
+
+            string? otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+
+            builder.Services.ConfigureOpenTelemetry(otlpEndpoint, builder.Environment.ApplicationName);
 
             builder.Services.AddDependencies();
 
@@ -53,6 +63,7 @@ public class Program
 
             WebApplication app = builder.Build();
 
+            app.UseMiddleware<CorrelationIdMiddleware>();
             app.UseSerilogRequestLogging();
             app.UseExceptionHandler();
 

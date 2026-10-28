@@ -1,9 +1,12 @@
-﻿using FluentValidation;
+using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Library.Application.Behaviors;
 
-public sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidator<TRequest>> validators)
+public sealed class ValidationBehavior<TRequest, TResponse>(
+    IEnumerable<IValidator<TRequest>> validators,
+    ILogger<ValidationBehavior<TRequest, TResponse>> logger)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
@@ -27,6 +30,16 @@ public sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidat
             .Where(f => f is not null)
             .ToList();
 
-        return failures.Count != 0 ? throw new ValidationException(failures) : await next();
+        if (failures.Count != 0)
+        {
+            logger.LogWarning(
+                "Falha de validação para a requisição {RequestName}: {@ValidationErrors}",
+                typeof(TRequest).Name,
+                failures.Select(f => new { Campo = f.PropertyName, Erro = f.ErrorMessage }));
+
+            throw new ValidationException(failures);
+        }
+
+        return await next();
     }
 }

@@ -1,8 +1,11 @@
-﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions;
 using FluentValidation;
 using Library.Application.LoanModule.Models;
+using Library.Application.Telemetry;
 using Library.Domain.LoanModule;
 using MediatR;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace Library.Application.UserModule.Queries;
 
@@ -25,10 +28,15 @@ public sealed class GetLoansByUserIdQueryValidator : AbstractValidator<GetLoansB
     }
 }
 
-public sealed class GetLoansByUserIdQueryHandler(ILoanRepository loanRepository) : IRequestHandler<GetLoansByUserIdQuery, Result<IReadOnlyList<DetailedLoanResponse>>>
+public sealed class GetLoansByUserIdQueryHandler(
+    ILoanRepository loanRepository,
+    ILogger<GetLoansByUserIdQueryHandler> logger) : IRequestHandler<GetLoansByUserIdQuery, Result<IReadOnlyList<DetailedLoanResponse>>>
 {
     public async Task<Result<IReadOnlyList<DetailedLoanResponse>>> Handle(GetLoansByUserIdQuery request, CancellationToken cancellationToken)
     {
+        using Activity? activity = LibraryTelemetry.ActivitySource.StartActivity("GetLoansByUserId");
+        activity?.SetTag("library.user.id", request.Id.ToString());
+
         List<Loan> loans = await loanRepository.ListByUserIdAsync(request.Id, cancellationToken);
 
         var response = loans.Select(l => new DetailedLoanResponse(
@@ -43,6 +51,14 @@ public sealed class GetLoansByUserIdQueryHandler(ILoanRepository loanRepository)
             ExpectedReturnDateUtc: l.ExpectedReturnDateUtc,
             ReturnedAtUtc: l.ReturnedAtUtc
         )).ToList();
+
+        activity?.SetTag("library.user.loans_count", response.Count);
+        activity?.SetStatus(ActivityStatusCode.Ok);
+
+        logger.LogInformation(
+            "Histórico de empréstimos consultado para o usuário {UserId}. Total de empréstimos: {Count}",
+            request.Id,
+            response.Count);
 
         return Result.Success<IReadOnlyList<DetailedLoanResponse>>(response);
     }

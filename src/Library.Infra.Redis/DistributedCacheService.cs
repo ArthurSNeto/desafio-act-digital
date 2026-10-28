@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
@@ -65,8 +65,12 @@ public sealed class DistributedCacheService(
     {
         var cached = await GetAsync<T>(key, cancellationToken);
         if (cached is not null)
+        {
+            logger.LogDebug("Cache HIT para a chave '{Key}'", key);
             return cached;
+        }
 
+        logger.LogDebug("Cache MISS para a chave '{Key}'. Executando factory...", key);
         var result = await factory();
 
         if (result is not null)
