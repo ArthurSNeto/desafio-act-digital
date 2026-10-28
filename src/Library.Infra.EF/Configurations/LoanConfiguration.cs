@@ -46,6 +46,16 @@ public class LoanConfiguration : IEntityTypeConfiguration<Loan>
         builder.Property(l => l.CancellationReason)
             .HasMaxLength(250);
 
+        builder.HasOne(l => l.Book)
+            .WithMany()
+            .HasForeignKey(l => l.BookId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(l => l.User)
+            .WithMany()
+            .HasForeignKey(l => l.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(l => l.BookId);
         builder.HasIndex(l => l.UserId);
         builder.HasIndex(l => new { l.BookId, l.Status });

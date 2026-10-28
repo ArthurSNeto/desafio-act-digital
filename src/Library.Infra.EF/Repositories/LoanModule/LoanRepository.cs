@@ -55,6 +55,7 @@ public class LoanRepository : GenericRepositoryBase<Loan>, ILoanRepository
     {
         return GenericRepository.Context.Set<Loan>()
             .AsNoTracking()
+            .Include(l => l.Book)
             .Where(l => l.UserId == userId)
             .OrderByDescending(l => l.LoanDateUtc)
             .ToListAsync(cancellationToken);

@@ -1,4 +1,6 @@
-﻿using Library.Domain.Exceptions;
+﻿using Library.Domain.BookModule;
+using Library.Domain.Exceptions;
+using Library.Domain.UserModule;
 
 namespace Library.Domain.LoanModule;
 
@@ -13,6 +15,9 @@ public sealed class Loan : Entity
     public DateTime? CancelledAtUtc { get; private set; }
     public string? CancellationReason { get; private set; }
     public LoanStatus Status { get; private set; }
+
+    public Book Book { get; private set; } = null!;
+    public User User { get; private set; } = null!;
 
     private Loan() { }
 

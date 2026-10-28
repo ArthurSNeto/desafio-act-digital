@@ -181,6 +181,25 @@ namespace Library.Infra.EF.Migrations
 
                     b.ToTable("Users", (string)null);
                 });
+
+            modelBuilder.Entity("Library.Domain.LoanModule.Loan", b =>
+                {
+                    b.HasOne("Library.Domain.BookModule.Book", "Book")
+                        .WithMany()
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Library.Domain.UserModule.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+
+                    b.Navigation("User");
+                });
 #pragma warning restore 612, 618
         }
     }
