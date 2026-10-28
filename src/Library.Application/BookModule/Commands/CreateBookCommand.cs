@@ -7,6 +7,7 @@ using Library.Domain.BookModule;
 using Library.Domain.Exceptions;
 using Library.Domain.LoanModule;
 using Library.Domain.UnitOfWork;
+using Library.Infra.Redis;
 using MediatR;
 using System.Text.Json;
 
@@ -47,7 +48,8 @@ public sealed class CreateBookCommandHandler(
     IBookRepository bookRepository,
     IAuditEventRepository auditRepository,
     IUnitOfWork unitOfWork,
-    ICurrentUserContext userContext) : IRequestHandler<CreateBookCommand, Result<BookResponse>>
+    ICurrentUserContext userContext,
+    ICacheService cache) : IRequestHandler<CreateBookCommand, Result<BookResponse>>
 {
     public async Task<Result<BookResponse>> Handle(CreateBookCommand request, CancellationToken cancellationToken)
     {
@@ -76,6 +78,8 @@ public sealed class CreateBookCommandHandler(
         await auditRepository.CreateAsync(audit, cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken);
+
+        await BookCacheKeys.InvalidateCatalogAsync(cache, cancellationToken);
 
         return Result.Success(new BookResponse(
             book.Id, book.Title, book.Author, book.Isbn,

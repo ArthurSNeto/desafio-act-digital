@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Library.Domain\Library.Domain.csproj" />
+    <ProjectReference Include="..\Library.Infra.Redis\Library.Infra.Redis.csproj" />
   </ItemGroup>
 
 </Project>

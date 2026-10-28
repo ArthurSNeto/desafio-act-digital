@@ -8,6 +8,7 @@ using Library.Domain.Exceptions;
 using Library.Domain.LoanModule;
 using Library.Domain.UnitOfWork;
 using Library.Domain.UserModule;
+using Library.Infra.Redis;
 using MediatR;
 using System.Text.Json;
 
@@ -53,7 +54,8 @@ public sealed class CreateLoanCommandHandler(
     IUserRepository userRepository,
     IAuditEventRepository auditRepository,
     IUnitOfWork unitOfWork,
-    ICurrentUserContext userContext) : IRequestHandler<CreateLoanCommand, Result<LoanExecutionResult>>
+    ICurrentUserContext userContext,
+    ICacheService cache) : IRequestHandler<CreateLoanCommand, Result<LoanExecutionResult>>
 {
     public async Task<Result<LoanExecutionResult>> Handle(CreateLoanCommand request, CancellationToken cancellationToken)
     {
@@ -97,6 +99,10 @@ public sealed class CreateLoanCommandHandler(
         await auditRepository.CreateAsync(audit, cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken);
+
+        await BookCacheKeys.InvalidateCatalogAsync(cache, cancellationToken);
+
+        await cache.RemoveAsync(BookCacheKeys.Availability(book.Id), cancellationToken);
 
         return new LoanExecutionResult(MapToResponse(loan), IsReplay: false);
     }

@@ -31,6 +31,7 @@
     <ProjectReference Include="..\Library.Application\Library.Application.csproj" />
     <ProjectReference Include="..\Library.Domain\Library.Domain.csproj" />
     <ProjectReference Include="..\Library.Infra.EF\Library.Infra.EF.csproj" />
+    <ProjectReference Include="..\Library.Infra.Redis\Library.Infra.Redis.csproj" />
   </ItemGroup>
   
 </Project>

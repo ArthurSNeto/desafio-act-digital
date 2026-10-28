@@ -12,7 +12,10 @@ public record BookResponse(
     DateTime? UpdatedAtUtc);
 
 public record BookAvailableResponse(
-    bool Available);
+    Guid Id,
+    string Title,
+    int AvailableCopies,
+    bool IsAvailable);
 
 public record BookLoanHistoryResponse(
     Guid LoanId,

@@ -7,6 +7,7 @@ using Library.Domain.BookModule;
 using Library.Domain.Exceptions;
 using Library.Domain.LoanModule;
 using Library.Domain.UnitOfWork;
+using Library.Infra.Redis;
 using MediatR;
 using System.Text.Json;
 
@@ -38,7 +39,8 @@ public sealed class CancelLoanCommandHandler(
     IBookRepository bookRepository,
     IAuditEventRepository auditRepository,
     IUnitOfWork unitOfWork,
-    ICurrentUserContext userContext) : IRequestHandler<CancelLoanCommand, Result<LoanResponse>>
+    ICurrentUserContext userContext,
+    ICacheService cache) : IRequestHandler<CancelLoanCommand, Result<LoanResponse>>
 {
     public async Task<Result<LoanResponse>> Handle(CancelLoanCommand request, CancellationToken cancellationToken)
     {
@@ -72,6 +74,10 @@ public sealed class CancelLoanCommandHandler(
         await auditRepository.CreateAsync(audit, cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken);
+
+        await BookCacheKeys.InvalidateCatalogAsync(cache, cancellationToken);
+
+        await cache.RemoveAsync(BookCacheKeys.Availability(book.Id), cancellationToken);
 
         return Result.Success(new LoanResponse(
             loan.Id,

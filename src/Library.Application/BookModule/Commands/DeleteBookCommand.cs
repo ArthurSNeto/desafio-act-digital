@@ -6,6 +6,7 @@ using Library.Domain.AuditModule;
 using Library.Domain.BookModule;
 using Library.Domain.Exceptions;
 using Library.Domain.UnitOfWork;
+using Library.Infra.Redis;
 using MediatR;
 using System.Text.Json;
 
@@ -34,7 +35,8 @@ public sealed class DeleteBookCommandHandler(
     IBookRepository bookRepository,
     IAuditEventRepository auditRepository,
     IUnitOfWork unitOfWork,
-    ICurrentUserContext userContext) : IRequestHandler<DeleteBookCommand, Result<BookResponse>>
+    ICurrentUserContext userContext,
+    ICacheService cache) : IRequestHandler<DeleteBookCommand, Result<BookResponse>>
 {
     public async Task<Result<BookResponse>> Handle(DeleteBookCommand request, CancellationToken cancellationToken)
     {
@@ -69,6 +71,10 @@ public sealed class DeleteBookCommandHandler(
         await auditRepository.CreateAsync(audit, cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken);
+
+        await BookCacheKeys.InvalidateCatalogAsync(cache, cancellationToken);
+
+        await cache.RemoveAsync(BookCacheKeys.Availability(book.Id), cancellationToken);
 
         return Result.Success(new BookResponse(
             book.Id, book.Title, book.Author, book.Isbn,

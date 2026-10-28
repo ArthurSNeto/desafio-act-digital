@@ -10,6 +10,7 @@ using Library.Infra.EF.Repositories.BookModule;
 using Library.Infra.EF.Repositories.LoanModule;
 using Library.Infra.EF.Repositories.UserModule;
 using Library.Infra.EF.UnitOfWork;
+using Library.Infra.Redis;
 
 namespace Library.API.Configurations;
 
@@ -25,6 +26,8 @@ public static class DependencyInjectionConfigurations
         services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ILoanRepository, LoanRepository>();
+
+        services.AddSingleton<ICacheService, DistributedCacheService>();
 
         return services;
     }
