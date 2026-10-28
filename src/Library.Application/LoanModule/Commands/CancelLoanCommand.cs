@@ -1,11 +1,14 @@
 ﻿using CSharpFunctionalExtensions;
 using FluentValidation;
+using Library.Application.Interfaces;
 using Library.Application.LoanModule.Models;
+using Library.Domain.AuditModule;
 using Library.Domain.BookModule;
 using Library.Domain.Exceptions;
 using Library.Domain.LoanModule;
 using Library.Domain.UnitOfWork;
 using MediatR;
+using System.Text.Json;
 
 namespace Library.Application.LoanModule.Commands;
 
@@ -33,7 +36,9 @@ public class CancelLoanCommandValidator : AbstractValidator<CancelLoanCommand>
 public sealed class CancelLoanCommandHandler(
     ILoanRepository loanRepository,
     IBookRepository bookRepository,
-    IUnitOfWork unitOfWork) : IRequestHandler<CancelLoanCommand, Result<LoanResponse>>
+    IAuditEventRepository auditRepository,
+    IUnitOfWork unitOfWork,
+    ICurrentUserContext userContext) : IRequestHandler<CancelLoanCommand, Result<LoanResponse>>
 {
     public async Task<Result<LoanResponse>> Handle(CancelLoanCommand request, CancellationToken cancellationToken)
     {
@@ -48,6 +53,23 @@ public sealed class CancelLoanCommandHandler(
 
         book.IncreaseAvailableCopies();
         bookRepository.Update(book);
+
+        AuditEvent audit = new(
+            entityName: nameof(Loan),
+            entityId: loan.Id.ToString(),
+            action: "Cancel",
+            actor: userContext.CurrentUser,
+            correlationId: userContext.CorrelationId,
+            details: JsonSerializer.Serialize(new
+            {
+                loan.BookId,
+                loan.UserId,
+                loan.CancelledAtUtc,
+                loan.CancellationReason,
+                book.AvailableCopies
+            })
+        );
+        await auditRepository.CreateAsync(audit, cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken);
 

@@ -1,10 +1,13 @@
 ﻿using CSharpFunctionalExtensions;
 using FluentValidation;
 using Library.Application.BookModule.Models;
+using Library.Application.Interfaces;
+using Library.Domain.AuditModule;
 using Library.Domain.BookModule;
 using Library.Domain.Exceptions;
 using Library.Domain.UnitOfWork;
 using MediatR;
+using System.Text.Json;
 
 namespace Library.Application.BookModule.Commands;
 
@@ -37,7 +40,11 @@ public sealed class UpdateBookCommandValidator : AbstractValidator<UpdateBookCom
     }
 }
 
-public sealed class UpdateBookCommandHandler(IBookRepository bookRepository, IUnitOfWork unitOfWork) : IRequestHandler<UpdateBookCommand, Result<BookResponse>>
+public sealed class UpdateBookCommandHandler(
+    IBookRepository bookRepository,
+    IAuditEventRepository auditRepository,
+    IUnitOfWork unitOfWork,
+    ICurrentUserContext userContext) : IRequestHandler<UpdateBookCommand, Result<BookResponse>>
 {
     public async Task<Result<BookResponse>> Handle(UpdateBookCommand request, CancellationToken cancellationToken)
     {
@@ -55,6 +62,22 @@ public sealed class UpdateBookCommandHandler(IBookRepository bookRepository, IUn
         book.UpdateDetails(request.Title, request.Author, request.Isbn, request.TotalCopies);
 
         bookRepository.Update(book);
+
+        AuditEvent audit = new(
+            entityName: nameof(Book),
+            entityId: book.Id.ToString(),
+            action: "Update",
+            actor: userContext.CurrentUser,
+            correlationId: userContext.CorrelationId,
+            details: JsonSerializer.Serialize(new
+            {
+                book.Title,
+                book.Author,
+                book.Isbn,
+                book.TotalCopies
+            })
+        );
+        await auditRepository.CreateAsync(audit, cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken);
 

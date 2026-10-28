@@ -1,10 +1,14 @@
 ﻿using CSharpFunctionalExtensions;
 using FluentValidation;
 using Library.Application.BookModule.Models;
+using Library.Application.Interfaces;
+using Library.Domain.AuditModule;
 using Library.Domain.BookModule;
 using Library.Domain.Exceptions;
+using Library.Domain.LoanModule;
 using Library.Domain.UnitOfWork;
 using MediatR;
+using System.Text.Json;
 
 namespace Library.Application.BookModule.Commands;
 
@@ -39,7 +43,11 @@ public sealed class CreateBookCommandValidator : AbstractValidator<CreateBookCom
     }
 }
 
-public sealed class CreateBookCommandHandler(IBookRepository bookRepository, IUnitOfWork unitOfWork) : IRequestHandler<CreateBookCommand, Result<BookResponse>>
+public sealed class CreateBookCommandHandler(
+    IBookRepository bookRepository,
+    IAuditEventRepository auditRepository,
+    IUnitOfWork unitOfWork,
+    ICurrentUserContext userContext) : IRequestHandler<CreateBookCommand, Result<BookResponse>>
 {
     public async Task<Result<BookResponse>> Handle(CreateBookCommand request, CancellationToken cancellationToken)
     {
@@ -50,6 +58,22 @@ public sealed class CreateBookCommandHandler(IBookRepository bookRepository, IUn
 
         Book book = new(request.Title, request.Author, request.Isbn, request.TotalCopies);
         await bookRepository.CreateAsync(book, cancellationToken);
+
+        AuditEvent audit = new(
+            entityName: nameof(Book),
+            entityId: book.Id.ToString(),
+            action: "Created",
+            actor: userContext.CurrentUser,
+            correlationId: userContext.CorrelationId,
+            details: JsonSerializer.Serialize(new
+            {
+                book.Title,
+                book.Author,
+                book.Isbn,
+                book.TotalCopies
+            })
+        );
+        await auditRepository.CreateAsync(audit, cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken);
 

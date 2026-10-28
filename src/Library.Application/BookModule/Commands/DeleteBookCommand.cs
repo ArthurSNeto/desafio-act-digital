@@ -1,10 +1,13 @@
 ﻿using CSharpFunctionalExtensions;
 using FluentValidation;
 using Library.Application.BookModule.Models;
+using Library.Application.Interfaces;
+using Library.Domain.AuditModule;
 using Library.Domain.BookModule;
 using Library.Domain.Exceptions;
 using Library.Domain.UnitOfWork;
 using MediatR;
+using System.Text.Json;
 
 namespace Library.Application.BookModule.Commands;
 
@@ -27,7 +30,11 @@ public sealed class DeleteBookCommandValidator : AbstractValidator<DeleteBookCom
     }
 }
 
-public sealed class DeleteBookCommandHandler(IBookRepository bookRepository, IUnitOfWork unitOfWork) : IRequestHandler<DeleteBookCommand, Result<BookResponse>>
+public sealed class DeleteBookCommandHandler(
+    IBookRepository bookRepository,
+    IAuditEventRepository auditRepository,
+    IUnitOfWork unitOfWork,
+    ICurrentUserContext userContext) : IRequestHandler<DeleteBookCommand, Result<BookResponse>>
 {
     public async Task<Result<BookResponse>> Handle(DeleteBookCommand request, CancellationToken cancellationToken)
     {
@@ -47,6 +54,19 @@ public sealed class DeleteBookCommandHandler(IBookRepository bookRepository, IUn
         {
             bookRepository.Delete(book);
         }
+
+        AuditEvent audit = new(
+            entityName: nameof(Book),
+            entityId: book.Id.ToString(),
+            action: "Delete",
+            actor: userContext.CurrentUser,
+            correlationId: userContext.CorrelationId,
+            details: JsonSerializer.Serialize(new
+            {
+                book.IsActive,
+            })
+        );
+        await auditRepository.CreateAsync(audit, cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken);
 
