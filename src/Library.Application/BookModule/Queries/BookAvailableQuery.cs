@@ -7,28 +7,28 @@ using MediatR;
 
 namespace Library.Application.BookModule.Queries;
 
-public sealed class BookAvailableQueryQuery : IRequest<Result<BookAvailableResponse>>
+public sealed class CheckBookAvailabilityQuery : IRequest<Result<BookAvailableResponse>>
 {
     public Guid Id { get; set; }
 
-    public BookAvailableQueryQuery(Guid id)
+    public CheckBookAvailabilityQuery(Guid id)
     {
         Id = id;
     }
 }
 
-public sealed class BookAvailableQueryQueryValidator : AbstractValidator<BookAvailableQueryQuery>
+public sealed class CheckBookAvailabilityQueryValidator : AbstractValidator<CheckBookAvailabilityQuery>
 {
-    public BookAvailableQueryQueryValidator()
+    public CheckBookAvailabilityQueryValidator()
     {
         RuleFor(x => x.Id)
             .NotEmpty();
     }
 }
 
-public sealed class BookAvailableQueryQueryHandler(IBookRepository bookRepository) : IRequestHandler<BookAvailableQueryQuery, Result<BookAvailableResponse>>
+public sealed class CheckBookAvailabilityQueryHandler(IBookRepository bookRepository) : IRequestHandler<CheckBookAvailabilityQuery, Result<BookAvailableResponse>>
 {
-    public async Task<Result<BookAvailableResponse>> Handle(BookAvailableQueryQuery request, CancellationToken cancellationToken)
+    public async Task<Result<BookAvailableResponse>> Handle(CheckBookAvailabilityQuery request, CancellationToken cancellationToken)
     {
         Book? book = await bookRepository.RetrieveByIDAsync(request.Id, cancellationToken);
 

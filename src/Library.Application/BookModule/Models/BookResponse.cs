@@ -13,3 +13,13 @@ public record BookResponse(
 
 public record BookAvailableResponse(
     bool Available);
+
+public record BookLoanHistoryResponse(
+    Guid LoanId,
+    Guid UserId,
+    string Status,
+    DateTime LoanDateUtc,
+    DateTime ExpectedReturnDateUtc,
+    DateTime? ReturnedAtUtc,
+    DateTime? CancelledAtUtc,
+    string? CancellationReason);
