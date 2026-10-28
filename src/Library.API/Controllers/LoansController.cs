@@ -31,6 +31,16 @@ public sealed class LoansController : BaseController
 
         return CreatedAtAction(nameof(Create), new { id = result.Value.Data.Id }, result.Value.Data);
     }
+
+    [HttpPost("{id:guid}/return")]
+    [ProducesResponseType(typeof(LoanResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Return([FromRoute] Guid id, CancellationToken ct)
+    {
+        var result = await Mediator.Send(new ReturnLoanCommand(id), ct);
+
+        return HandleResult(result);
+    }
 }
 
 public record CreateLoanDto(Guid BookId, Guid UserId, DateTime ExpectedReturnDateUtc);

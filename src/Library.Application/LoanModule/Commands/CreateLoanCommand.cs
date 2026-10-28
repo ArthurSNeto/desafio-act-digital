@@ -103,6 +103,6 @@ public sealed class CreateLoanCommandHandler(
 
     private static LoanResponse MapToResponse(Loan loan)
     {
-        return new(loan.Id, loan.BookId, loan.UserId, loan.Status.ToString(), loan.LoanDateUtc, loan.ExpectedReturnDateUtc);
+        return new(loan.Id, loan.BookId, loan.UserId, loan.Status.ToString(), loan.LoanDateUtc, loan.ExpectedReturnDateUtc, loan.ReturnedAtUtc);
     }
 }

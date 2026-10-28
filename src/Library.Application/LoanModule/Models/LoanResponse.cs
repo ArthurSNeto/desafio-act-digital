@@ -6,7 +6,8 @@ public record LoanResponse(
     Guid UserId,
     string Status,
     DateTime LoanDateUtc,
-    DateTime ExpectedReturnDateUtc
+    DateTime ExpectedReturnDateUtc,
+    DateTime? ReturnedAtUtc
 );
 
 public record DetailedLoanResponse(
