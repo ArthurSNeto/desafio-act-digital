@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: library-api-config
+  labels:
+    app.kubernetes.io/name: library-api
+    app.kubernetes.io/component: backend
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ASPNETCORE_HTTP_PORTS: "8080"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard.monitoring.svc.cluster.local:4317"
+  Serilog__MinimumLevel__Default: "Information"
+  Serilog__MinimumLevel__Override__Microsoft: "Warning"
+  Serilog__MinimumLevel__Override__Microsoft.Hosting.Lifetime: "Information"
+  Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore: "Information"
