@@ -1,4 +1,4 @@
-﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions;
 using Library.Application.BookModule.Commands;
 using Library.Application.BookModule.Models;
 using Library.Application.BookModule.Queries;
@@ -40,11 +40,11 @@ public sealed class BooksController : BaseController
         return HandleResult(result);
     }
 
-    [HttpPatch]
+    [HttpPatch("{id:guid}")]
     [ProducesResponseType(typeof(BookResponse), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Update([FromBody] UpdateBookCommand command, CancellationToken ct)
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateBookDto dto, CancellationToken ct)
     {
-        Result<BookResponse> result = await Mediator.Send(command, ct);
+        Result<BookResponse> result = await Mediator.Send(new UpdateBookCommand(id, dto.Title, dto.Author, dto.Isbn, dto.TotalCopies), ct);
         return HandleResult(result);
     }
 
@@ -72,3 +72,5 @@ public sealed class BooksController : BaseController
         return HandleResult(result);
     }
 }
+
+public record UpdateBookDto(string? Title, string? Author, string? Isbn, int TotalCopies);

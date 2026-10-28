@@ -95,5 +95,27 @@ public class BooksControllerTests(CustomWebApplicationFactory factory)
         persistedBook!.IsActive.Should().BeFalse();
     }
 
+    [Fact]
+    public async Task Should_Update_Book_Successfully_Via_Patch()
+    {
+        // Arrange
+        var isbn = $"978{Random.Shared.Next(100000000, 999999999)}";
+        var createResponse = await _client.PostAsJsonAsync("/books",
+            new CreateBookCommand("Título Original", "Autor Original", isbn, 3));
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = (await createResponse.Content.ReadFromJsonAsync<BookResponse>())!;
+
+        // Act - Patch /books/{id}
+        var patchResponse = await _client.PatchAsJsonAsync($"/books/{created.Id}",
+            new { Title = "Título Atualizado", TotalCopies = 5 });
+        patchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var updated = (await patchResponse.Content.ReadFromJsonAsync<BookResponse>())!;
+
+        // Assert
+        updated.Title.Should().Be("Título Atualizado");
+        updated.TotalCopies.Should().Be(5);
+        updated.AvailableCopies.Should().Be(5);
+    }
+
     private record UserDto(Guid Id);
 }
