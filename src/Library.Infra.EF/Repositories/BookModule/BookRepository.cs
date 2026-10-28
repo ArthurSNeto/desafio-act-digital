@@ -1,4 +1,5 @@
-﻿using Library.Domain.BookModule;
+using Library.Domain.BookModule;
+using Library.Domain.LoanModule;
 using Library.Infra.EF.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,12 +33,14 @@ public class BookRepository : GenericRepositoryBase<Book>, IBookRepository
 
     public Task<bool> ExistsByIsbnAsync(Guid id, string isbn, CancellationToken cancellationToken = default)
     {
-        return GenericRepository.Context.Set<Book>().AnyAsync(b => b.Isbn == isbn && b.Id != id, cancellationToken);
+        var normalizedIsbn = Book.NormalizeIsbn(isbn);
+        return GenericRepository.Context.Set<Book>().AnyAsync(b => b.Isbn == normalizedIsbn && b.Id != id, cancellationToken);
     }
 
     public Task<Book?> GetByIsbnAsync(string isbn, CancellationToken cancellationToken = default)
     {
-        return GenericRepository.Context.Set<Book>().FirstOrDefaultAsync(b => b.Isbn == isbn, cancellationToken);
+        var normalizedIsbn = Book.NormalizeIsbn(isbn);
+        return GenericRepository.Context.Set<Book>().FirstOrDefaultAsync(b => b.Isbn == normalizedIsbn, cancellationToken);
     }
 
     public Task<List<Book>> ListAsync(bool onlyActive = true, CancellationToken cancellationToken = default)
@@ -47,6 +50,6 @@ public class BookRepository : GenericRepositoryBase<Book>, IBookRepository
 
     public Task<bool> HasLoanHistoryAsync(Guid bookId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return GenericRepository.Context.Set<Loan>().AnyAsync(l => l.BookId == bookId, cancellationToken);
     }
 }

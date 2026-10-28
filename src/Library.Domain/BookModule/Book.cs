@@ -1,4 +1,4 @@
-﻿using Library.Domain.Exceptions;
+using Library.Domain.Exceptions;
 
 namespace Library.Domain.BookModule;
 
@@ -98,6 +98,6 @@ public sealed class Book : Entity
             throw new BusinessRuleException("O livro deve ser cadastrado com pelo menos 1 exemplar.");
     }
 
-    private static string NormalizeIsbn(string isbn) =>
+    public static string NormalizeIsbn(string isbn) =>
         isbn.Replace("-", "").Replace(" ", "").Trim().ToUpperInvariant();
 }
